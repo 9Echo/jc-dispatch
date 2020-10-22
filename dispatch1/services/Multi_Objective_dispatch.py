@@ -2,6 +2,7 @@
 # 日期： 2020/9/15
 # 时间： 14:56
 import pandas as pd
+from dispatch1.entity import LoadTask
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
@@ -97,6 +98,7 @@ def generate_candidate(stock_data, truck):
             # 当长度为1时，只需遍历一次货物列表即可
             if long_iter == 0:
                 for j in range(len(index)):
+                    candidate_for_one_truck = []
                     current_weight = stock_list_city_commodity.loc[index[j]]['unit_weight']
                     if weight_up >= current_weight >= weight_down:
                         candidate_for_one_truck.append(index[j])
@@ -146,7 +148,7 @@ def rank(load_task_candidate):
 
 def dispatch(load_task_rank, truck):
 
-    load_task = {}
+    load_task = LoadTask()
 
     return load_task
 
