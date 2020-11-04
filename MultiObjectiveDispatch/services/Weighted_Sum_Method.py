@@ -5,7 +5,7 @@
 import pandas as pd
 
 
-def sum_weighted(priority, weight, three):
+def sum_weighted(priority, weight, order):
     """
     三个目标函数对应的线性加权函数
     :param priority: 优先级
@@ -17,10 +17,10 @@ def sum_weighted(priority, weight, three):
     sum_func = 0
     # 设置三个优化目标的权重值
     weight_pri = 10
-    weight_wei = 6
-    weight_thr = 3
+    weight_wei = 8
+    weight_order = 2
 
-    sum_func = weight_pri * priority + weight_wei * weight + weight_thr * three
+    sum_func = weight_pri * priority + weight_wei * weight + weight_order * order
 
     return sum_func
 
@@ -31,7 +31,7 @@ def weighted_sum_method(stock, load_task_candidate, truck):
     :param stock: 已处理过的内存数据；数据格式：dataframe
     :param load_task_candidate: 即为所有车辆生成的总装车清单候选集；数据格式：{‘car_mark':candidate_set[[],[]]}
     :param truck: 数据格式：dataframe
-    :return: load_task: 生成的装车清单；数据格式：{'car_mark':candidate_for_one []}
+    :return: load_task: dataframe, 生成的装车清单；数据格式：{'car_mark':candidate_for_one []}
     """
 
     col = stock.columns
@@ -42,9 +42,13 @@ def weighted_sum_method(stock, load_task_candidate, truck):
     n_truck = len(truck)
     # 取出某一车次的所有装车清单候选集
     # TODO 只采用前两辆车数据
-    for i in range(0, 2):
+    for i in range(0, n_truck):
         car_mark = truck.loc[i]['car_mark']
         load_task_truck = load_task_candidate[car_mark]
+
+        if len(load_task_truck) == 0:
+            print('当前无可分配货物')
+            return load_task
 
         # 获取当前车次载重
         weight_up = truck.loc[i]['load_weight']
@@ -63,7 +67,7 @@ def weighted_sum_method(stock, load_task_candidate, truck):
             # 遍历该装车清单里的货物信息,包括优先级、重量
             sum_priority = 0
             sum_weight = 0
-            sum_three = 0
+            sum_order = 0
 
             for k in range(n_one_candidate):
                 # 1. 计算优先级数值
@@ -71,10 +75,9 @@ def weighted_sum_method(stock, load_task_candidate, truck):
                 sum_priority += stock.loc[index]['priority']
                 # 2. 计算单个候选集总重量
                 sum_weight += stock.loc[index]['unit_weight']
-                # TODO 3. 第三个优化目标
 
             # 计算单个候选集的score值
-            score = sum_weighted(sum_priority, sum_weight/weight_up, sum_three)
+            score = sum_weighted(sum_priority, sum_weight/weight_up, sum_order)
             sum_list_weight.append(score)
 
         max_score = max(sum_list_weight)

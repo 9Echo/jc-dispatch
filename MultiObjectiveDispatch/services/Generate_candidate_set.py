@@ -28,7 +28,7 @@ def generate_candidate(stock_data, truck):
     n = len(truck)
     # 遍历车次列表
     # TODO 单辆车开单/时间窗口内多辆车同时开单
-    for i in range(0, 2):
+    for i in range(0, 4):
 
         # print("这是第 %d " % i)
         # 一辆车所有的装车清单候选集
@@ -42,7 +42,14 @@ def generate_candidate(stock_data, truck):
         # 取出可发重量
         can_be_sent_weight = stock_list_city_commodity['actual_weight'].tolist()
         # 取出单件重量
+        print(truck.loc[i]['city'], truck.loc[i]['big_commodity_name'])
+
+        if truck.loc[i]['big_commodity_name'] != '线材' or truck.loc[i]['big_commodity_name'] != '型钢':
+            stock_list_city_commodity = stock_list_city_commodity[stock_list_city_commodity['unit_weight'] > 4.9]
+
         weight_unit = stock_list_city_commodity['unit_weight'].tolist()
+
+        print(weight_unit)
         # 拿到最小的单件重量
         min_weight = min(weight_unit)
 
@@ -62,8 +69,10 @@ def generate_candidate(stock_data, truck):
 
         # 将当前车次的候选集作为 value 存入字典
         load_task_candidate[truck.loc[i]['car_mark']] = candidate_for_one_truck
+        # if len(candidate_for_one_truck) == 0:
+        #     raise Exception('该车次无可分配货物')
 
-        # print(load_task_candidate)
+        print(load_task_candidate)
     return load_task_candidate
 
 
@@ -80,17 +89,20 @@ def dfs_candidate(weight_list, weight_up, weight_down):
 
     candidate_set = []
 
+    print(weight_up, weight_down)
+
     def dfs(l1, left, r):
         """
         枚举
-        :param l1: 当前满足重量要求的临时dataframe
+        :param l1: 当前满足重量要求的临时 dataframe
         :param left: 左指针
         :param r: 右指针
         :return:
         """
-        # print("正在计算中")
+
+        # print(len(candidate_set))
         n = l1.weight.sum()
-        # print(weight_up, weight_down, n)
+
         if weight_down <= n <= weight_up:
             l1_list = list(l1.index_weight)
             candidate_set.append(l1_list)
@@ -100,7 +112,7 @@ def dfs_candidate(weight_list, weight_up, weight_down):
         for j in range(0, r-left+1):
             l1_index = weight_l1.loc[left+j]['index_weight']
             l1_temp = weight_l1[weight_l1['index_weight'] == l1_index]
-            dfs(l1.append(l1_temp, ignore_index=True), left+j+1, r-1)
+            dfs(l1.append(l1_temp, ignore_index=True), left+j+1, len(index)-1)
 
     # 取出已分类货物的index方便定位，此index即为当前类别下货物index
     index = weight_list.index
@@ -113,9 +125,10 @@ def dfs_candidate(weight_list, weight_up, weight_down):
     for i in range(len(index)):
         dfs(weight_l1[weight_l1['index_weight'] == index[i]], 1, len(index)-1)
 
-    # for ind in range(len(candidate_set)):
-    #     print(candidate_set[ind], list(weight_l1[weight_l1['index_weight'] == candidate_set[ind][0]]['weight']))
-    # print(candidate_set)
+    for ind in range(len(candidate_set)):
+        print(candidate_set[ind], list(weight_l1[weight_l1['index_weight'] == candidate_set[ind][0]]['weight']))
+    print(candidate_set)
+
     return candidate_set
 
 
