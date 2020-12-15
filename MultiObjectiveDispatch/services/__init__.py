@@ -6,10 +6,11 @@ import pandas as pd
 from MultiObjectiveDispatch.DAO.Stock import get_stock_day
 from MultiObjectiveDispatch.DAO.Truck import get_truck
 from MultiObjectiveDispatch.services.deal_stock import deal_stock
-from MultiObjectiveDispatch.services.Generate_candidate_set import generate_candidate
+from MultiObjectiveDispatch.services.Generate_candidate import generate_candidate
 from MultiObjectiveDispatch.services.Weighted_Sum_Method import weighted_sum_method
 
 if __name__ == "__main__":
+
     # 读取当天库存数据
     stock_day = get_stock_day()
 

@@ -130,21 +130,3 @@ def dfs_candidate(weight_list, weight_up, weight_down):
     print(candidate_set)
 
     return candidate_set
-
-
-# if __name__ == "__main__":
-#
-#     # 输入当天库存数据
-#     stock_day = pd.read_excel("../test_stock.xls")
-#
-#     # 库存数据预处理
-#     stock_data = deal_stock(stock_day)
-#
-#     # 车辆数据（非真实数据）
-#     truck = pd.read_excel("../truck.xls")
-#
-#     # 根据库存为当前车次（30辆车）的每一辆车生成装车清单候选集
-#     load_task_candidates = generate_candidate(stock_data, truck)
-#
-#     # 优先将rank值高的候选集与车次进行匹配
-#     load_task_dispatch = dispatch(load_task_candidates, truck)

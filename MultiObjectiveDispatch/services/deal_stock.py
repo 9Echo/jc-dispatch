@@ -17,6 +17,10 @@ def deal_stock(data):
     if data.empty:
         raise Exception('输入列表为空')
 
+    # 筛选出四条线路的货物
+    data = data[
+        (data['物流公司类型'] == '省内1') | (data['物流公司类型'] == '省内2') | (data['物流公司类型'] == '省内3') | (
+                    data['物流公司类型'] == '省内4')]
     # 将优先发运转换为对应的优先级数字
     data = data.fillna(0)
     data['priority'] = ''
