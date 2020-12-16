@@ -42,11 +42,13 @@ def weighted_sum_method(stock, load_task_candidate, truck):
     n_truck = len(truck)
     # 取出某一车次的所有装车清单候选集
     # TODO 只采用前两辆车数据
-    for i in range(0, n_truck):
+    actual_weight = 0
+    for i in range(0, 8):
         car_mark = truck.loc[i]['car_mark']
-        load_task_truck = load_task_candidate[car_mark]
+        # 当前车辆对应的预装车清单候选集
+        pre_load_task_candidate_truck = load_task_candidate[car_mark]
 
-        if len(load_task_truck) == 0:
+        if len(pre_load_task_candidate_truck) == 0:
             print('当前无可分配货物')
             return load_task
 
@@ -54,14 +56,15 @@ def weighted_sum_method(stock, load_task_candidate, truck):
         weight_up = truck.loc[i]['load_weight']
 
         # 该车辆所有的可装车清单候选集长度（即分货的可能方式）
-        n_load_task = len(load_task_truck)
+        n_load_task = len(pre_load_task_candidate_truck)
         # 该车次对应的最大线性分值
         max_score = 0
+        # 记录当前车次对应的每个预装车清单候选集的分值
         sum_list_weight = []
         # 遍历该装车清单候选集
         for j in range(n_load_task):
             # load_one_candidate:[] 表示其中一种的装车清单
-            load_one_candidate = load_task_truck[j]
+            load_one_candidate = pre_load_task_candidate_truck[j]
             # 该候选集对应的货物个数
             n_one_candidate = len(load_one_candidate)
             # 遍历该装车清单里的货物信息,包括优先级、重量
@@ -83,12 +86,28 @@ def weighted_sum_method(stock, load_task_candidate, truck):
         max_score = max(sum_list_weight)
         # 分值最高的候选集对应的数组
         ind = sum_list_weight.index(max_score)
-        # 当前数组里是原库存信息表DataFrame的index，根据该index取出库存数据，生成新的load_task
-        load_task_ind = load_task_truck[ind]
+
+        """
+        1. 当前数组里是原库存信息表DataFrame的index，根据该index取出库存数据，生成新的load_task
+        2. 当前车次的预装车清单候选集里的index和每个预装车清单候选集分数的index是一样的
+        3. pre_load_task：根据max_score从预装车清单候选集里取出该车次的预装车清单
+        [[],[],...,[]]  →  []
+        """
+
+        pre_load_task = pre_load_task_candidate_truck[ind]
         # 生成load_task
-        n_load_task_ind = len(load_task_ind)
+        n_load_task_ind = len(pre_load_task)
+
         for stock_ind in range(n_load_task_ind):
-            load_task = load_task.append(stock.iloc[load_task_ind[stock_ind]: load_task_ind[stock_ind] + 1], ignore_index=True)
-            load_task.iloc[-1:]['car_mark'] = car_mark
+            pre_load_task_truck = stock.iloc[pre_load_task[stock_ind]: pre_load_task[stock_ind] + 1]
+            pre_load_task_truck['car_mark'] = ''
+            pre_load_task_truck = pre_load_task_truck.reset_index(drop=True)
+            pre_load_task_truck.loc[0, ['car_mark']] = car_mark
+
+            actual_weight += pre_load_task_truck.loc[0, ['actual_weight']]
+
+            load_task = load_task.append(pre_load_task_truck, ignore_index=True)
+
+            print(actual_weight)
 
     return load_task
