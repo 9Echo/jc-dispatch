@@ -10,7 +10,7 @@ def sum_weighted(priority, weight, order):
     三个目标函数对应的线性加权函数
     :param priority: 优先级
     :param weight: 占重比
-    :param three:
+    :param order: 拆单数量
     :return: score值
     """
 
@@ -28,10 +28,10 @@ def sum_weighted(priority, weight, order):
 def weighted_sum_method(stock, load_task_candidate, truck):
     """
     多目标求解法一：线性加权法
-    :param stock: 已处理过的内存数据；数据格式：dataframe
+    :param stock: 已处理过的内存数据；数据格式：DataFrame
     :param load_task_candidate: 即为所有车辆生成的总装车清单候选集；数据格式：{‘car_mark':candidate_set[[],[]]}
-    :param truck: 数据格式：dataframe
-    :return: load_task: dataframe, 生成的装车清单；数据格式：{'car_mark':candidate_for_one []}
+    :param truck: 数据格式：DataFrame
+    :return: load_task: DataFrame, 生成的装车清单；数据格式：{'car_mark':candidate_for_one []}
     """
 
     col = stock.columns
@@ -83,7 +83,7 @@ def weighted_sum_method(stock, load_task_candidate, truck):
         max_score = max(sum_list_weight)
         # 分值最高的候选集对应的数组
         ind = sum_list_weight.index(max_score)
-        # 当前数组里是原库存信息表dataframe的index，根据该index取出库存数据，生成新的load_task
+        # 当前数组里是原库存信息表DataFrame的index，根据该index取出库存数据，生成新的load_task
         load_task_ind = load_task_truck[ind]
         # 生成load_task
         n_load_task_ind = len(load_task_ind)

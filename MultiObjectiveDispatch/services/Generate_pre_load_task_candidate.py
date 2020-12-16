@@ -28,7 +28,7 @@ def generate_candidate(stock_data, truck):
     n = len(truck)
     # 遍历车次列表
     # TODO 单辆车开单/时间窗口内多辆车同时开单
-    for i in range(0, 4):
+    for i in range(0, 8):
 
         # print("这是第 %d " % i)
         # 一辆车所有的装车清单候选集
@@ -65,7 +65,7 @@ def generate_candidate(stock_data, truck):
         # TODO 库存更新：如果前一辆车已经确定装车货物，需在库存中减去已发货物
 
         # 根据重量规则生成候选集
-        candidate_for_one_truck = dfs_candidate(stock_list_city_commodity, weight_up, weight_down)
+        candidate_for_one_truck = dfs_pre_candidate(stock_list_city_commodity, weight_up, weight_down)
 
         # 将当前车次的候选集作为 value 存入字典
         load_task_candidate[truck.loc[i]['car_mark']] = candidate_for_one_truck
@@ -76,7 +76,7 @@ def generate_candidate(stock_data, truck):
     return load_task_candidate
 
 
-def dfs_candidate(weight_list, weight_up, weight_down):
+def dfs_pre_candidate(weight_list, weight_up, weight_down):
     """
     深度搜索实现枚举过程
     :param weight_list: 当前经过筛选的库存数据
@@ -87,46 +87,49 @@ def dfs_candidate(weight_list, weight_up, weight_down):
     if weight_list.empty:
         return None
 
-    candidate_set = []
+    pre_load_task_candidate = []
 
     print(weight_up, weight_down)
 
-    def dfs(l1, left, r):
+    def dfs_enumerate_search(l1, left, right):
         """
-        枚举
+        枚举搜索
         :param l1: 当前满足重量要求的临时 dataframe
         :param left: 左指针
-        :param r: 右指针
+        :param right: 右指针
         :return:
         """
 
         # print(len(candidate_set))
-        n = l1.weight.sum()
+        # 当前这个candidate里所有货物的总重量
+        pre_candidate_weight_sum = l1.weight.sum()
 
-        if weight_down <= n <= weight_up:
-            l1_list = list(l1.index_weight)
-            candidate_set.append(l1_list)
-            # print(candidate_set)
-        elif n > weight_up or left > r:
+        if weight_down <= pre_candidate_weight_sum <= weight_up:
+            l1_list = list(l1.good_in_stock_index_list)
+            pre_load_task_candidate.append(l1_list)
+            # print(pre_load_task_candidate)
+        elif pre_candidate_weight_sum > weight_up or left > right:
             return
-        for j in range(0, r-left+1):
-            l1_index = weight_l1.loc[left+j]['index_weight']
-            l1_temp = weight_l1[weight_l1['index_weight'] == l1_index]
-            dfs(l1.append(l1_temp, ignore_index=True), left+j+1, len(index)-1)
+        for j in range(0, right-left+1):
+            l1_index = weight_l1.loc[left+j]['good_in_stock_index_list']
+            l1_temp = weight_l1[weight_l1['good_in_stock_index_list'] == l1_index]
+            dfs_enumerate_search(l1.append(l1_temp, ignore_index=True), left+j+1, len(good_in_stock_index)-1)
 
     # 取出已分类货物的index方便定位，此index即为当前类别下货物index
-    index = weight_list.index
-    index_weight = list(index)
+    good_in_stock_index = weight_list.index
+    # 把所有货物在stock表中的index和weight取出，转换为list数组，这里的index是唯一定义货物的index
+    good_in_stock_index_list = list(good_in_stock_index)
     weight = list(weight_list['unit_weight'])
-    weight_temp = {'index_weight': index_weight, 'weight': weight}
+    # 组合这两个list构建一个字典，其中index_list是所有可发货物下标，weight是货物对应的重量
+    weight_temp = {'good_in_stock_index_list': good_in_stock_index_list, 'weight': weight}
     # weight_l1只包含原dataframe的货物下标和对应的货物重量
     weight_l1 = DataFrame(weight_temp)
 
-    for i in range(len(index)):
-        dfs(weight_l1[weight_l1['index_weight'] == index[i]], 1, len(index)-1)
+    for i in range(len(good_in_stock_index)):
+        dfs_enumerate_search(weight_l1[weight_l1['good_in_stock_index_list'] == good_in_stock_index[i]], 1, len(good_in_stock_index)-1)
 
-    for ind in range(len(candidate_set)):
-        print(candidate_set[ind], list(weight_l1[weight_l1['index_weight'] == candidate_set[ind][0]]['weight']))
-    print(candidate_set)
+    for ind in range(len(pre_load_task_candidate)):
+        print(pre_load_task_candidate[ind], list(weight_l1[weight_l1['good_in_stock_index_list'] == pre_load_task_candidate[ind][0]]['weight']))
+    print(pre_load_task_candidate)
 
-    return candidate_set
+    return pre_load_task_candidate
