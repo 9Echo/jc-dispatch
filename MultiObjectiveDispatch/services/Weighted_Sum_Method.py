@@ -43,7 +43,7 @@ def weighted_sum_method(stock, load_task_candidate, truck):
     # 取出某一车次的所有装车清单候选集
     # TODO 只采用前两辆车数据
     actual_weight = 0
-    for i in range(0, 8):
+    for i in range(0, n_truck):
         car_mark = truck.loc[i]['car_mark']
         # 当前车辆对应的预装车清单候选集
         pre_load_task_candidate_truck = load_task_candidate[car_mark]
@@ -104,7 +104,7 @@ def weighted_sum_method(stock, load_task_candidate, truck):
             pre_load_task_truck = pre_load_task_truck.reset_index(drop=True)
             pre_load_task_truck.loc[0, ['car_mark']] = car_mark
 
-            actual_weight += pre_load_task_truck.loc[0, ['actual_weight']]
+            actual_weight += pre_load_task_truck.loc[0, ['unit_weight']]
 
             load_task = load_task.append(pre_load_task_truck, ignore_index=True)
 

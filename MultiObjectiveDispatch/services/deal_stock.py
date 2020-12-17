@@ -31,6 +31,7 @@ def deal_stock(data):
     # 将货物拆分成最小不可再拆形式（即每一条货物信息中的重量都小于等于最小载重）
     data['actual_number'] = data['可发件数'] + data['需开单件数']
     data['actual_weight'] = data['可发重量'] + data['需开单重量']
+    # data['unit_weight'] = round(data['actual_weight'] / data['actual_number'], 4)
     data['unit_weight'] = round(data['actual_weight'] / data['actual_number'])
     data = data.loc[data['actual_number'] > 0]
 

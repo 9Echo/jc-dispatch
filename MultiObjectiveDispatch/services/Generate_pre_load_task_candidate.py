@@ -28,7 +28,7 @@ def generate_candidate(stock_data, truck):
     n = len(truck)
     # 遍历车次列表
     # TODO 单辆车开单/时间窗口内多辆车同时开单
-    for i in range(0, 8):
+    for i in range(0, n):
 
         # print("这是第 %d " % i)
         # 一辆车所有的装车清单候选集
@@ -44,12 +44,13 @@ def generate_candidate(stock_data, truck):
         # 取出单件重量
         print(truck.loc[i]['city'], truck.loc[i]['big_commodity_name'])
 
-        if truck.loc[i]['big_commodity_name'] != '线材' or truck.loc[i]['big_commodity_name'] != '型钢':
+        if truck.loc[i]['big_commodity_name'] != '线材' and truck.loc[i]['big_commodity_name'] != '型钢' and truck.loc[i]['big_commodity_name'] != '螺纹':
             stock_list_city_commodity = stock_list_city_commodity[stock_list_city_commodity['unit_weight'] > 4.9]
 
         weight_unit = stock_list_city_commodity['unit_weight'].tolist()
 
         print(weight_unit)
+
         # 拿到最小的单件重量
         min_weight = min(weight_unit)
 
